@@ -2,6 +2,7 @@ var path = require("path");
 
 module.exports = function (app){
     var friendsList = [];
+    var bestMatches = [];
     
    
     app.get("/api/friends", function(req, res) {
@@ -10,35 +11,27 @@ module.exports = function (app){
 
     app.post("/api/friends",  function(req, res){
     var currentFriend = req.body;
-        console.log(currentFriend);
+        
+
 
         var friendDifferences = [];
 
-        if (friendsList.length > 1){
-            friendsList.forEach(function(user){
-                var totalDiff = 0;
-
-                for(var i = 0; i < currentFriend.scores.length; i++){
-                    var otherAnswer = user.scores[i];
-                    var thisAnswer  = currentFriend.scores[i];
-                    var difference = +otherAnswer - +thisAnswer;
-                    totalDiff += Math.abs(difference);
+        if (friendsList.length >= 1){
+            bestMatch = {};
+            bestDiff = 100;
+            for (let i in friendsList) {
+                totalDiff = 0;
+                
+                for (let j in currentFriend.scores) {
+                    totalDiff += Math.abs(currentFriend.scores[j]-friendsList[i].scores[j]);
                 }
-                friendDifferences.push(totalDiff);
-                console.log(friendDifferences);
-            });
-
-            var lowestDifference = Math.min.apply(null, friendDifferences);
-
-            var bestMatches = [];
-
-            for (var i = 0; i < friendDifferences.length; i++){
-                if(friendDifferences[i] === lowestDifference){
-                    bestMatches.push(friendsList[i]);
+                if (bestDiff > totalDiff) {
+                    bestDiff = totalDiff;
+                    bestMatch = friendsList[i];
                 }
             }
-
-            res.json(bestMatches);
+            bestMatches.push([currentFriend, bestMatch]);
+            res.json(bestMatch);
         } else {        
             res.json(currentFriend);
         }
